@@ -14,8 +14,8 @@ for x in range(31, 44):
 
 
     # mask the orange colors
-    lower_orange = np.array([4, 237, 227])
-    upper_orange = np.array([18, 251, 277])
+    lower_orange = np.array([4, 233, 224])
+    upper_orange = np.array([18, 247, 284])
     mask = cv2.inRange(img_hsv, lower_orange, upper_orange)
 
     # set my output img to zero everywhere except my mask
