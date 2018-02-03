@@ -3,7 +3,7 @@ import cv2
 import numpy as np
 import time
 from enum import Enum
-from get_center import subtract_vector
+from get_ratio.get_center import subtract_vector
 
 CORNERS = Enum('CORNERS', 'TOP_RIGHT TOP_LEFT BOTTOM_RIGHT BOTTOM_LEFT')
 
