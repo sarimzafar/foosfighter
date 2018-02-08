@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import time
 from enum import Enum
-from locate_center import subtract_vector
+from localization.locate_center import subtract_vector
 
 CORNERS = Enum('CORNERS', 'TOP_RIGHT TOP_LEFT BOTTOM_RIGHT BOTTOM_LEFT')
 
@@ -95,13 +95,31 @@ def locate_corner(img, corner):
 
     # cv2.waitKey(0)
 
-    if len(points) == 2:
-        if (corner == CORNERS.TOP_RIGHT) or (corner == CORNERS.TOP_LEFT):
-            p1, p2 = points
-            points = [p1] if p1[1] < p2[1] else [p2]
-        elif (corner == CORNERS.BOTTOM_RIGHT) or (corner == CORNERS.BOTTOM_LEFT):
-            p1, p2 = points
-            points = [p1] if p1[1] > p2[1] else [p2]
+    if len(points) == 4:
+        p1, p2, p3, p4 = points
+        if (corner == CORNERS.TOP_RIGHT):
+            sorted_right = sorted(points, key=lambda key: key[1], reverse=True)
+            sorted_right = [sorted_right[2],sorted_right[3]]
+            p1, p2 = sorted_right
+            points = [p1] if p1[0] > p2[0] else [p2]
+
+        elif (corner == CORNERS.TOP_LEFT):
+            sorted_right = sorted(points, key=lambda key: key[1], reverse=True)
+            sorted_right = [sorted_right[2],sorted_right[3]]
+            p1, p2 = sorted_right
+            points = [p1] if p1[0] < p2[0] else [p2]
+
+        elif (corner == CORNERS.BOTTOM_RIGHT):
+            sorted_right = sorted(points, key=lambda key: key[1])
+            sorted_right = [sorted_right[2],sorted_right[3]]
+            p1, p2 = sorted_right
+            points = [p1] if p1[0] > p2[0] else [p2]
+
+        elif (corner == CORNERS.BOTTOM_LEFT):
+            sorted_right = sorted(points, key=lambda key: key[1])
+            sorted_right = [sorted_right[2],sorted_right[3]]
+            p1, p2 = sorted_right
+            points = [p1] if p1[0] < p2[0] else [p2]
 
     # return result_contours
     return points[0]
@@ -109,9 +127,9 @@ def locate_corner(img, corner):
 
 def convert_height_pixels_to_mm(corner_up, corner_down):
     x, y = subtract_vector(corner_up, corner_down)
-    return y/DIMENSIONS[1]
+    return y/DIMENSIONS[0]
 
 
 def convert_width_pixels_to_mm(corner_left, corner_right):
     x, y = subtract_vector(corner_left, corner_right)
-    return x/DIMENSIONS[0]
+    return x/DIMENSIONS[1]
