@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import time
 from enum import Enum
-from locate_center import subtract_vector
+from localization.locate_center import subtract_vector
 
 CORNERS = Enum('CORNERS', 'TOP_RIGHT TOP_LEFT BOTTOM_RIGHT BOTTOM_LEFT')
 
@@ -109,9 +109,9 @@ def locate_corner(img, corner):
 
 def convert_height_pixels_to_mm(corner_up, corner_down):
     x, y = subtract_vector(corner_up, corner_down)
-    return y/DIMENSIONS[1]
+    return abs(y/DIMENSIONS[1]) # pixels/mm
 
 
 def convert_width_pixels_to_mm(corner_left, corner_right):
     x, y = subtract_vector(corner_left, corner_right)
-    return x/DIMENSIONS[0]
+    return abs(x/DIMENSIONS[0]) ## pixels/mm

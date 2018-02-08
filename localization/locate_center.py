@@ -6,14 +6,14 @@ def locate_center_circle(img):
     height, width, _ = img.shape
 
     img = img[int(height/3):int(2*height/3), int(width/3):int(2*width/3)]
-
+    img_copy = img.copy()
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     gray = cv2.medianBlur(gray, 5)
 
     rows = gray.shape[0]
     circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1, rows / 8,
                                param1=100, param2=25,
-                               minRadius=1, maxRadius=30)
+                               minRadius=6, maxRadius=10)
     centers = []
 
     # print("circles")
@@ -24,12 +24,12 @@ def locate_center_circle(img):
         for i in circles[0, :]:
                 center = (i[0], i[1])
                 radius = i[2]
-                if radius > 10 or radius < 6:
-                    continue
-                # cv2.circle(gray, center, radius, (255, 255, 255), -1)
+                # if radius > 10 or radius < 6:
+                #    continue
+                # cv2.circle(img_copy, center, radius, (255, 0, 0), -1)
                 centers.append(center)
 
-    # cv2.imshow('gray', gray)
+    # cv2.imshow(side, img_copy)
     # cv2.waitKey(0)
 
     if len(centers):
