@@ -8,6 +8,8 @@ import pyzed.camera as zcam
 import pyzed.types as tp
 import pyzed.core as core
 import pyzed.defines as sl
+from localization.locate_table import locate_table as get_ratio
+from localization.locate_center import locate_center_circle as locate_center
 
 ## Camera settings
 camera_settings = sl.PyCAMERA_SETTINGS.PyCAMERA_SETTINGS_BRIGHTNESS
@@ -51,9 +53,20 @@ def locate_table(cam):
 			
 			left_img = left_matrix.get_data()
 			right_img = right_matrix.get_data()
+			
+			## YOUR CODE GOES HERE
 
-			cv2.imshow("left", left_img)
-			cv2.imshow("right", right_img)
+			(ratio_x, ratio_y) = get_ratio(left_img, right_img)
+
+			print("ratio_x: {0}".format(ratio_x))
+			print("ratio_y: {0}".format(ratio_y))
+
+			# locate_center(left_img, "Left")
+			# locate_center(right_img, "Right")
+			
+			#cv2.imshow("left", left_img)
+			#cv2.imshow("right", right_img)
+
 			key = cv2.waitKey(5)
 		else:
 			key = cv2.waitKey(5)
