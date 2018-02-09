@@ -6,12 +6,9 @@ def track_ball(img):
     # Preprocessing
     img_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
     # Define range of mask
-
-    #lower_orange = np.array([2, 215, 150])
-    #upper_orange = np.array([19, 250, 300])
-
-    lower_orange = np.array([2, 175, 150])
-    upper_orange = np.array([19, 250, 300])
+    
+    lower_orange = np.array([2, 100, 100])
+    upper_orange = np.array([19, 255, 255])
 
     # Apply mask
     mask = cv2.inRange(img_hsv, lower_orange, upper_orange)
