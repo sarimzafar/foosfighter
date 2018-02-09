@@ -13,14 +13,15 @@ def prediction(tracking_points, sampling_count, n):
     y_array = []
 
     for item in fit_data[::-1]:
-        if item is None:
-            continue
+        if item is not None:
+            if n > 0:
+                x_array.append(item[0])
+                y_array.append(item[1])
+                n = n-1
+            else:
+                break
 
-        if n > 0:
-            x_array.append(item[0])
-            y_array.append(item[1])
-            n = n-1
-    
+            
     if len(x_array) < 2 or len(y_array) < 2:
         return None, None, None
 

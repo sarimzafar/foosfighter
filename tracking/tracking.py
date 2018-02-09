@@ -44,22 +44,33 @@ while fvs.more():
 
     # Prediction Code
     sampling_count = int(len(tracking_points)/2)
-    n = 3
+    n = 4
     m, c, direction = prediction(tracking_points, sampling_count, n)
+
+    # Clear out tracking_points after sometime
+    if len(tracking_points) > 25:
+        tracking_points = tracking_points[-10:]
 
     # Extrapolate Line
     if m is not None:
-        x1 = 20
-        x2 = 400
+        x1 = 100
+        x2 = 300
 
         y1 = int(m*x1 + c)
         y2 = int(m*x2 + c)
+
+        if direction == 1:
+            cv2.circle(frame, (x1, y1), 10, (120, 40, 255), 10)
+        else:
+            cv2.circle(frame, (x2, y2), 10, (120, 40, 255), 10)
+
+        
 
         cv2.line(frame, (x1, y1),
                 (x2, y2), (255, 0, 0), 3)
 
     cv2.imshow("tracking", frame)
-    writer.writeFrame(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+    # writer.writeFrame(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
 
     #if not detected:
     #    print(frameCount)
