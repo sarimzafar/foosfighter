@@ -38,7 +38,7 @@ def track_ball(img):
 
     # cv2.imshow("tracking", img)
 
-    return img
+    return center
 
     # if len(cnts) > 0 :
     #     return True
