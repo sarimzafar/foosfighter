@@ -26,7 +26,7 @@ def get_corners_trans_right_img(left_img, right_img):
     translation_vector = locate_translation_vector(left_img, right_img)
 
     if translation_vector is None:
-        return (None, None)
+        return ()
 
     top_right_corner = locate_corner(right_img, CORNERS.TOP_RIGHT)
     bottom_right_corner = locate_corner(right_img, CORNERS.BOTTOM_RIGHT)
