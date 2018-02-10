@@ -16,12 +16,22 @@ def locate_corner(img, corner):
     if (corner == CORNERS.TOP_RIGHT) or (corner == CORNERS.BOTTOM_RIGHT):
         cv2.rectangle(img, (0, 0), (int(width/2), int(height)),
                       (0, 0, 0), cv2.FILLED)
-        # img = img[:,int(width/2):int(width),:]
+
     elif (corner == CORNERS.TOP_LEFT) or (corner == CORNERS.BOTTOM_LEFT):
         cv2.rectangle(img, (int(width / 2), 0),
                       (int(width), int(height)),
                       (0, 0, 0), cv2.FILLED)
-        # img = img[:,0:int(width/2),:]
+
+    if (corner == CORNERS.TOP_RIGHT) or (corner == CORNERS.TOP_LEFT):
+        cv2.rectangle(img, (0, int(height/2)), (int(width), int(height)),
+                      (0, 0, 0), cv2.FILLED)
+
+    elif (corner == CORNERS.BOTTOM_RIGHT) or (corner == CORNERS.BOTTOM_LEFT):
+        cv2.rectangle(img, (0, 0),
+                      (int(width), int(height/2)),
+                      (0, 0, 0), cv2.FILLED)
+
+
 
     img_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
@@ -95,7 +105,14 @@ def locate_corner(img, corner):
 
     # cv2.waitKey(0)
 
-    if len(points) == 4:
+
+    if len(points) == 2:
+        p1, p2 = points
+        if (corner == CORNERS.TOP_RIGHT) or (corner == CORNERS.BOTTOM_RIGHT):
+            points = [p1] if p1[0] > p2[0] else [p2]
+        if (corner == CORNERS.TOP_LEFT) or (corner == CORNERS.BOTTOM_LEFT):
+            points = [p1] if p1[0] < p2[0] else [p2]
+    elif len(points) == 4:
         p1, p2, p3, p4 = points
         if (corner == CORNERS.TOP_RIGHT):
             sorted_right = sorted(points, key=lambda key: key[1], reverse=True)
@@ -120,6 +137,10 @@ def locate_corner(img, corner):
             sorted_right = [sorted_right[2],sorted_right[3]]
             p1, p2 = sorted_right
             points = [p1] if p1[0] < p2[0] else [p2]
+    elif len(points) == 1:
+        pass
+    else:
+        return None
 
     # return result_contours
     return points[0]
