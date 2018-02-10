@@ -44,6 +44,7 @@ def locate_table(cam):
 	# Define constants here
 	key = ''
 
+    initialize_params()
 	# Exit using 'q' key
 	while key != 113:
 		err = cam.grab(runtime)
@@ -53,19 +54,9 @@ def locate_table(cam):
 			
 			left_img = left_matrix.get_data()
 			right_img = right_matrix.get_data()
-			
-			## YOUR CODE GOES HERE
 
-			(ratio_x, ratio_y) = get_ratio(left_img, right_img)
-
-			print("ratio_x: {0}".format(ratio_x))
-			print("ratio_y: {0}".format(ratio_y))
-
-			# locate_center(left_img, "Left")
-			# locate_center(right_img, "Right")
-			
-			#cv2.imshow("left", left_img)
-			#cv2.imshow("right", right_img)
+			cv2.imshow("left", left_img)
+			cv2.imshow("right", right_img)
 
 			key = cv2.waitKey(5)
 		else:
@@ -73,6 +64,44 @@ def locate_table(cam):
 	cv2.destroyAllWindows()
 	cam.close()
 	print("\nFINISHED")
+
+
+def initialize_params():
+    ratio_x = None
+    ratio_y= None
+    p1 = None
+    p2 = None
+    p3 = None
+    p4 = None
+    # Exit using 'q' key
+    while ratio_x is not None:
+        err = cam.grab(runtime)
+        if err == tp.PyERROR_CODE.PySUCCESS:
+            cam.retrieve_image(left_matrix, sl.PyVIEW.PyVIEW_LEFT)
+            cam.retrieve_image(right_matrix, sl.PyVIEW.PyVIEW_RIGHT)
+
+            left_img = left_matrix.get_data()
+            right_img = right_matrix.get_data()
+
+            ## YOUR CODE GOES HERE
+
+            (ratio_x, ratio_y) = get_ratio(left_img, right_img)
+
+            print("ratio_x: {0}".format(ratio_x))
+            print("ratio_y: {0}".format(ratio_y))
+
+            # locate_center(left_img, "Left")
+            # locate_center(right_img, "Right")
+
+            #cv2.imshow("left", left_img)
+            #cv2.imshow("right", right_img)
+
+            key = cv2.waitKey(5)
+        else:
+            key = cv2.waitKey(5)
+    print("\nparameters initialized")
+    return (ratio_x, ratio_y, p1, p2, p3, p4)
+
 
 def initialize_cam():
 	init = zcam.PyInitParameters()
