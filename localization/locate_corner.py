@@ -127,9 +127,9 @@ def locate_corner(img, corner):
 
 def convert_height_pixels_to_mm(corner_up, corner_down):
     x, y = subtract_vector(corner_up, corner_down)
-    return abs(y/DIMENSIONS[1]) # pixels/mm
+    return abs(y/DIMENSIONS[0]) # pixels/mm
 
 
 def convert_width_pixels_to_mm(corner_left, corner_right):
     x, y = subtract_vector(corner_left, corner_right)
-    return abs(x/DIMENSIONS[0]) ## pixels/mm
+    return abs(x/DIMENSIONS[1]) ## pixels/mm
