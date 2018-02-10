@@ -31,9 +31,9 @@ def track_ball(img):
         center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
 
         cv2.circle(img, (int(x), int(y)), int(r), (0, 255, 0), 2)
-        # cv2.circle(img, center, 10, (0, 0, 255), 10)
+        #cv2.circle(img, center, 10, (0, 0, 255), 10)
 
-    # cv2.imshow("tracking", img)
+    cv2.imshow("tracking", img)
 
     return center
 

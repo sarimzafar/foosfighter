@@ -10,6 +10,7 @@ import pyzed.core as core
 import pyzed.defines as sl
 from localization.locate_table import locate_table as get_ratio
 from localization.locate_center import locate_center_circle as locate_center
+from tracking.track_ball import track_ball as track
 
 ## Camera settings
 camera_settings = sl.PyCAMERA_SETTINGS.PyCAMERA_SETTINGS_BRIGHTNESS
@@ -43,20 +44,37 @@ def locate_table(cam):
 	
 	# Define constants here
 	key = ''
-
-    initialize_params()
+	frameCount = 0
+	tracking_points = []
 	# Exit using 'q' key
+	x_ratio = None
+	y_ratio = None
 	while key != 113:
 		err = cam.grab(runtime)
 		if err == tp.PyERROR_CODE.PySUCCESS:
 			cam.retrieve_image(left_matrix, sl.PyVIEW.PyVIEW_LEFT)
 			cam.retrieve_image(right_matrix, sl.PyVIEW.PyVIEW_RIGHT)
-			
-			left_img = left_matrix.get_data()
-			right_img = right_matrix.get_data()
+			# img = cv2.resize(img, None, fx=0.25, fy=0.25)
+            					
+
+			left_img = cv2.resize(left_matrix.get_data(), None, fx=0.25, fy=0.25)
+			right_img = cv2.resize(right_matrix.get_data(), None, fx=0.25, fy=0.25)
 
 			cv2.imshow("left", left_img)
 			cv2.imshow("right", right_img)
+
+			#if frameCount < 200 and (x_ratio is None and y_ratio is None):
+			#	x_ratio, y_ratio = initialize_params(left_img, right_img)
+			#	print(frameCount)	
+			
+			# Track Ball
+			#pos = track(right_img)
+			#tracking_points.append(pos)
+			#display_tracking_points(left_img, tracking_points)
+				
+			frameCount = frameCount + 1
+			#cv2.imshow("left", left_img)
+			#cv2.imshow("right", right_img)
 
 			key = cv2.waitKey(5)
 		else:
@@ -65,42 +83,22 @@ def locate_table(cam):
 	cam.close()
 	print("\nFINISHED")
 
+def display_tracking_points(frame, tracking_points):
+	for i in range(1, len(tracking_points)):
+		if tracking_points[i - 1] is None or tracking_points[i] is None:
+		    continue
+		
+		thickness = int(np.sqrt(64 / float(i + 1)) * 2.5)
+		cv2.line(frame, tracking_points[i - 1], tracking_points[i], (0, 0, 255), thickness)
+	    
 
-def initialize_params():
-    ratio_x = None
-    ratio_y= None
-    p1 = None
-    p2 = None
-    p3 = None
-    p4 = None
-    # Exit using 'q' key
-    while ratio_x is not None:
-        err = cam.grab(runtime)
-        if err == tp.PyERROR_CODE.PySUCCESS:
-            cam.retrieve_image(left_matrix, sl.PyVIEW.PyVIEW_LEFT)
-            cam.retrieve_image(right_matrix, sl.PyVIEW.PyVIEW_RIGHT)
+def initialize_params(left_img, right_img):
+    (ratio_x, ratio_y) = get_ratio(left_img, right_img)
 
-            left_img = left_matrix.get_data()
-            right_img = right_matrix.get_data()
+    print("ratio_x: {0}".format(ratio_x))
+    print("ratio_y: {0}".format(ratio_y))
 
-            ## YOUR CODE GOES HERE
-
-            (ratio_x, ratio_y) = get_ratio(left_img, right_img)
-
-            print("ratio_x: {0}".format(ratio_x))
-            print("ratio_y: {0}".format(ratio_y))
-
-            # locate_center(left_img, "Left")
-            # locate_center(right_img, "Right")
-
-            #cv2.imshow("left", left_img)
-            #cv2.imshow("right", right_img)
-
-            key = cv2.waitKey(5)
-        else:
-            key = cv2.waitKey(5)
-    print("\nparameters initialized")
-    return (ratio_x, ratio_y, p1, p2, p3, p4)
+    return ratio_x, ratio_y
 
 
 def initialize_cam():
