@@ -8,6 +8,7 @@ import pyzed.camera as zcam
 import pyzed.types as tp
 import pyzed.core as core
 import pyzed.defines as sl
+import numpy as np
 from localization.locate_table import locate_table as get_ratio
 from localization.locate_center import locate_center_circle as locate_center
 from tracking.track_ball import track_ball as track
@@ -54,27 +55,16 @@ def locate_table(cam):
 		if err == tp.PyERROR_CODE.PySUCCESS:
 			cam.retrieve_image(left_matrix, sl.PyVIEW.PyVIEW_LEFT)
 			cam.retrieve_image(right_matrix, sl.PyVIEW.PyVIEW_RIGHT)
-			# img = cv2.resize(img, None, fx=0.25, fy=0.25)
-            					
-
-			left_img = cv2.resize(left_matrix.get_data(), None, fx=0.25, fy=0.25)
-			right_img = cv2.resize(right_matrix.get_data(), None, fx=0.25, fy=0.25)
-
-			cv2.imshow("left", left_img)
-			cv2.imshow("right", right_img)
-
-			#if frameCount < 200 and (x_ratio is None and y_ratio is None):
-			#	x_ratio, y_ratio = initialize_params(left_img, right_img)
-			#	print(frameCount)	
 			
-			# Track Ball
-			#pos = track(right_img)
+			img = cv2.resize(left_matrix.get_data(), None, fx=1, fy=1)
+			
+			pos = track(img)
+			
+			cv2.imshow("mainframe", img)
 			#tracking_points.append(pos)
-			#display_tracking_points(left_img, tracking_points)
+			#display_tracking_points(img, tracking_points)
 				
 			frameCount = frameCount + 1
-			#cv2.imshow("left", left_img)
-			#cv2.imshow("right", right_img)
 
 			key = cv2.waitKey(5)
 		else:
@@ -103,7 +93,7 @@ def initialize_params(left_img, right_img):
 
 def initialize_cam():
 	init = zcam.PyInitParameters()
-	init.camera_resolution = sl.PyRESOLUTION.PyRESOLUTION_HD720  # HD720 (default fps: 60)
+	init.camera_resolution = sl.PyRESOLUTION.PyRESOLUTION_VGA  # HD720 (default fps: 60)
 	cam = zcam.PyZEDCamera()
 	
 	return init,cam
