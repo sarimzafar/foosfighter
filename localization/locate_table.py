@@ -1,5 +1,6 @@
 from localization.locate_corner import CORNERS, locate_corner, convert_height_pixels_to_mm, convert_width_pixels_to_mm
-from localization.locate_center import locate_center_circle, locate_translation_vector, translate_vector
+from localization.locate_center import locate_translation_vector
+from localization.math import translate_vector
 
 def locate_table(left_img, right_img):
     translation_vector = locate_translation_vector(left_img, right_img)

@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import time
 from enum import Enum
-from localization.locate_center import subtract_vector
+from localization.math import subtract_vector
 
 CORNERS = Enum('CORNERS', 'TOP_RIGHT TOP_LEFT BOTTOM_RIGHT BOTTOM_LEFT')
 

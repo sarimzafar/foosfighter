@@ -10,7 +10,6 @@ import pyzed.core as core
 import pyzed.defines as sl
 import numpy as np
 from localization.locate_table import locate_table as get_ratio
-from localization.locate_center import locate_center_circle as locate_center
 from tracking.track_ball import track_ball as track
 
 ## Camera settings

@@ -1,60 +1,26 @@
 import cv2
 import numpy as np
-
-def locate_center_circle(img):
-
-    height, width, _ = img.shape
-
-    img = img[int(height/3):int(2*height/3), int(width/3):int(2*width/3)]
-    img_copy = img.copy()
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    gray = cv2.medianBlur(gray, 5)
-
-    rows = gray.shape[0]
-    circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, 1, rows / 8,
-                               param1=100, param2=25,
-                               minRadius=6, maxRadius=10)
-    centers = []
-
-    # print("circles")
-    # print(circles)
-
-    if circles is not None:
-        circles = np.uint16(np.around(circles))
-        for i in circles[0, :]:
-                center = (i[0], i[1])
-                radius = i[2]
-                # if radius > 10 or radius < 6:
-                #    continue
-                # cv2.circle(img_copy, center, radius, (255, 0, 0), -1)
-                centers.append(center)
-
-    # cv2.imshow(side, img_copy)
-    # cv2.waitKey(0)
-
-    if len(centers):
-        return centers[0]
-    return None
+from localization.locate_corner import CORNERS, locate_corner
+from localization.math import subtract_vector, average_list_of_vectors
 
 
 def locate_translation_vector(left_img, right_img):
-    left_center_of_field = locate_center_circle(left_img)
-    right_center_of_field = locate_center_circle(right_img)
+    top_right_corner_right = locate_corner(right_img, CORNERS.TOP_RIGHT)
+    top_right_corner_left = locate_corner(left_img, CORNERS.TOP_RIGHT)
+    bottom_right_corner_right = locate_corner(right_img, CORNERS.BOTTOM_RIGHT)
+    bottom_right_corner_left = locate_corner(left_img, CORNERS.BOTTOM_RIGHT)
+    top_left_corner_right = locate_corner(right_img, CORNERS.TOP_LEFT)
+    top_left_corner_left = locate_corner(left_img, CORNERS.TOP_LEFT)
+    bottom_left_corner_right = locate_corner(right_img, CORNERS.BOTTOM_LEFT)
+    bottom_left_corner_left = locate_corner(left_img, CORNERS.BOTTOM_LEFT)
 
-    # print("left_center_of_field")
-    # print(left_center_of_field)
-    # print("right_center_of_field")
-    # print(right_center_of_field)
+    delta_top_right_corner = subtract_vector(top_right_corner_right, top_right_corner_left)
+    delta_bottom_right_corner = subtract_vector(bottom_right_corner_right, bottom_right_corner_left)
+    delta_top_left_corner = subtract_vector(top_left_corner_right, top_left_corner_left)
+    delta_bottom_left_corner = subtract_vector(bottom_left_corner_right, bottom_left_corner_left)
 
-    if left_center_of_field is not None and right_center_of_field is not None:
-        return (int(right_center_of_field[0]) - int(left_center_of_field[0]),
-                int(right_center_of_field[1]) - int(left_center_of_field[1]))
-    return None
+    deltas = (delta_top_right_corner, delta_bottom_right_corner, delta_top_left_corner, delta_bottom_left_corner)
 
+    avg_vec = average_list_of_vectors(deltas)
 
-def subtract_vector(v1, v2):
-    return (v1[0] - v2[0], v1[1] - v2[1])
-
-
-def translate_vector(v1, v2):
-    return (v1[0] + v2[0], v1[1] + v2[1])
+    return avg_vec
