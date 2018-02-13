@@ -23,9 +23,9 @@ def pick_color(event, x, y, flags, param):
 def main():
     import sys
     global image_hsv, pixel  # so we can use it in mouse callback
-    storagePath = '/media/ubuntu/TX1/vgaframes/'
-    fileName = 'small506.jpg'
-    image_src = cv2.imread(storagePath+fileName)  # pick.py my.png
+    # storagePath = '/media/ubuntu/TX1/vgaframes/'
+    fileName = 'img1.jpg'
+    image_src = cv2.imread(fileName)  # pick.py my.png
     if image_src is None:
         print("the image read is None............")
         return

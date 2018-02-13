@@ -1,6 +1,9 @@
 import cv2
 import numpy as np
 
+def tracking(cam, runtime):
+	
+	
 
 def track_ball(img):
     # Preprocessing
