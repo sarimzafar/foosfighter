@@ -1,17 +1,17 @@
 import cv2
 import numpy as np
 
+def tracking(cam, runtime):
+	
+	
 
 def track_ball(img):
     # Preprocessing
     img_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
     # Define range of mask
-
-    #lower_orange = np.array([2, 215, 150])
-    #upper_orange = np.array([19, 250, 300])
-
-    lower_orange = np.array([2, 175, 150])
-    upper_orange = np.array([19, 250, 300])
+    
+    lower_orange = np.array([4, 135, 120])
+    upper_orange = np.array([19, 255, 255])
 
     # Apply mask
     mask = cv2.inRange(img_hsv, lower_orange, upper_orange)
@@ -33,12 +33,12 @@ def track_ball(img):
         M = cv2.moments(c)
         center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
 
-        cv2.circle(img, (int(x), int(y)), int(r), (0, 255, 0), 2)
-        # cv2.circle(img, center, 10, (0, 0, 255), 10)
+        # cv2.circle(img, (int(x), int(y)), int(r), (0, 255, 0), 2)
+        #cv2.circle(img, center, 10, (0, 0, 255), 10)
 
     # cv2.imshow("tracking", img)
 
-    return img
+    return center
 
     # if len(cnts) > 0 :
     #     return True
