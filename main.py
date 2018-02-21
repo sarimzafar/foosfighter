@@ -8,12 +8,14 @@ import numpy as np
 
 from utilities import display_frames
 from tracking.tracking import tracking
+from tracking.locate_foosmen import locate_foosmen
 from imutils.video import WebcamVideoStream
 
 def main():
 	print("Starting main().....")
 	wvs = WebcamVideoStream(src=0)
-	tracking(wvs)
+	locate_foosmen(wvs)
+	# tracking(wvs)
 
 if __name__ == "__main__":
 	main()
