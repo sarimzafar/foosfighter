@@ -54,7 +54,8 @@ else:
   print("Waiting for device...")
   consider_usb = 'usb' in args.discover.split(',')
   consider_serial = 'serial' in args.discover.split(',')
-  my_odrive = odrive.core.connect(consider_usb=True, consider_serial=False, IDs = odrive.util.ODRIVE_GOALIE, printer=print)
+  #my_odrive = odrive.core.connect(consider_usb=True, consider_serial=False, IDs = odrive.util.ODRIVE_GOALIE, printer=print)
+  my_odrive = odrive.core.connect(consider_usb=True, consider_serial=False, IDs = odrive.util.ODRIVE_FWD, printer=print)
   #my_odrive = odrive.core.find_any(consider_usb, consider_serial, printer=printer)
 print("Connected!")
 

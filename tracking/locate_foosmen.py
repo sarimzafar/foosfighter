@@ -53,7 +53,7 @@ def get_foosmen_mask(img):
     # Apply mask
     mask = cv2.inRange(img_hsv, lower_yellow, upper_yellow)
 
-    #cv2.imshow("colored mask", mask)
+    # cv2.imshow("colored mask", mask)
 
     # mask = cv2.erode(mask, np.ones((3, 3), np.uint8), iterations=1)
     mask = cv2.dilate(mask, np.ones((2, 2), np.uint8), iterations=3)
@@ -93,6 +93,8 @@ def label_foosmen(image, thresh, correction):
 				(0, 0, 255), 3)
 			cv2.putText(image, "#{}".format(i + 1), (x+correction+25, y+10),
 				cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0, 255, 0), 1)
+	
+	#cv2.imshow("foosmen-image", image)
 		
 	 
 	return len(positions), positions
