@@ -10,35 +10,46 @@ import math
 def connectODrives():
 	my_drive1 = odrive.core.connect(consider_usb=True, consider_serial=False, IDs = odrive.util.ODRIVE_GOALIE, printer=print)
 	my_drive2 = odrive.core.connect(consider_usb=True, consider_serial=False, IDs = odrive.util.ODRIVE_DEFENCE, printer=print)
-	my_drive3 = odrive.core.connect(consider_usb=True, consider_serial=False, IDs = odrive.util.ODRIVE_MID, printer=print)
+	#my_drive3 = odrive.core.connect(consider_usb=True, consider_serial=False, IDs = odrive.util.ODRIVE_MID, printer=print)
 	my_drive4 = odrive.core.connect(consider_usb=True, consider_serial=False, IDs = odrive.util.ODRIVE_FWD, printer=print)
-	return my_drive1, my_drive2, my_drive3, my_drive4
+	#return my_drive1, my_drive2, my_drive3, my_drive4
+	return my_drive1, my_drive2, my_drive4
 
-def odriveSetting(my_drive1, my_drive2, my_drive3, my_drive4):
+def gotoZero(my_drive1, my_drive2, my_drive4):#my_drive3, my_drive4):
+	my_drive1.motor0.pos_setpoint=0.0
+	my_drive1.motor1.pos_setpoint=0.0
+	my_drive2.motor0.pos_setpoint=0.0
+	my_drive2.motor1.pos_setpoint=0.0
+	#my_drive3.motor0.pos_setpoint=0.0
+	#my_drive3.motor1.pos_setpoint=0.0
+	my_drive4.motor0.pos_setpoint=0.0
+	my_drive4.motor1.pos_setpoint=0.0
+
+def odriveSetting(my_drive1, my_drive2, my_drive4):#my_drive3, my_drive4):
 	my_drive1.motor0.current_control.current_lim=30
 	my_drive1.motor1.current_control.current_lim=30
 	my_drive2.motor0.current_control.current_lim=30
 	my_drive2.motor1.current_control.current_lim=30
-	my_drive3.motor0.current_control.current_lim=30
-	my_drive3.motor1.current_control.current_lim=30
+	#my_drive3.motor0.current_control.current_lim=30
+	#my_drive3.motor1.current_control.current_lim=30
 	my_drive4.motor0.current_control.current_lim=30
 	my_drive4.motor1.current_control.current_lim=30
 
-	my_drive1.motor0.pos_gain=20.0
-	my_drive1.motor1.pos_gain=20.0
-	my_drive2.motor0.pos_gain=20.0
-	my_drive2.motor1.pos_gain=20.0
-	my_drive3.motor0.pos_gain=20.0
-	my_drive3.motor1.pos_gain=20.0
-	my_drive4.motor0.pos_gain=20.0
-	my_drive4.motor1.pos_gain=20.0
+	my_drive1.motor0.pos_gain=30.0
+	my_drive1.motor1.pos_gain=30.0
+	my_drive2.motor0.pos_gain=30.0
+	my_drive2.motor1.pos_gain=30.0
+	#my_drive3.motor0.pos_gain=30.0
+	#my_drive3.motor1.pos_gain=30.0
+	my_drive4.motor0.pos_gain=30.0
+	my_drive4.motor1.pos_gain=30.0
 
 	my_drive1.motor0.vel_gain=0.001500000013038516
 	my_drive1.motor1.vel_gain=0.001500000013038516
 	my_drive2.motor0.vel_gain=0.001500000013038516
 	my_drive2.motor1.vel_gain=0.001500000013038516
-	my_drive3.motor0.vel_gain=0.001500000013038516
-	my_drive3.motor1.vel_gain=0.001500000013038516
+	#my_drive3.motor0.vel_gain=0.001500000013038516
+	#my_drive3.motor1.vel_gain=0.001500000013038516
 	my_drive4.motor0.vel_gain=0.001500000013038516
 	my_drive4.motor1.vel_gain=0.001500000013038516
 
@@ -46,8 +57,8 @@ def odriveSetting(my_drive1, my_drive2, my_drive3, my_drive4):
 	my_drive1.motor1.vel_integrator_gain=0.0010000000474974513
 	my_drive2.motor0.vel_integrator_gain=0.0010000000474974513
 	my_drive2.motor1.vel_integrator_gain=0.0010000000474974513
-	my_drive3.motor0.vel_integrator_gain=0.0010000000474974513
-	my_drive3.motor1.vel_integrator_gain=0.0010000000474974513
+	#my_drive3.motor0.vel_integrator_gain=0.0010000000474974513
+	#my_drive3.motor1.vel_integrator_gain=0.0010000000474974513
 	my_drive4.motor0.vel_integrator_gain=0.0010000000474974513
 	my_drive4.motor1.vel_integrator_gain=0.0010000000474974513
 	
@@ -55,8 +66,8 @@ def odriveSetting(my_drive1, my_drive2, my_drive3, my_drive4):
 	my_drive1.motor1.pos_setpoint=0.0
 	my_drive2.motor0.pos_setpoint=0.0
 	my_drive2.motor1.pos_setpoint=0.0
-	my_drive3.motor0.pos_setpoint=0.0
-	my_drive3.motor1.pos_setpoint=0.0
+	#my_drive3.motor0.pos_setpoint=0.0
+	#my_drive3.motor1.pos_setpoint=0.0
 	my_drive4.motor0.pos_setpoint=0.0
 	my_drive4.motor1.pos_setpoint=0.0
 
@@ -70,11 +81,11 @@ def calibrationMode(my_drive1, my_drive2, my_drive3, my_drive4):
 	my_drive4.motor0.pos_gain=20
 	my_drive4.motor1.pos_gain=20
 
-def moveRodsRight(my_drive1, my_drive2, my_drive3, my_drive4):
+def moveRodsRight(my_drive1, my_drive2, my_drive3, my_drive4, drive1_low, drive2_low, drive3_low, drive4_low):
 	my_drive1.motor1.set_pos_setpoint(0.0, 0.0, 0.0)
-	my_drive2.motor0.set_pos_setpoint(7900.0, 0.0, 0.0)
-	my_drive3.motor0.set_pos_setpoint(2600, 0.0, 0.0)
-	my_drive4.motor0.set_pos_setpoint(5450, 0.0, 0.0)
+	my_drive2.motor0.set_pos_setpoint(7900.0+drive2_low, 0.0, 0.0)
+	my_drive3.motor0.set_pos_setpoint(2600+drive3_low, 0.0, 0.0)
+	my_drive4.motor0.set_pos_setpoint(5450+drive4_low, 0.0, 0.0)
 	previous_encoder_value1 = my_drive1.motor1.encoder.encoder_state
 	previous_encoder_value2 = my_drive2.motor0.encoder.encoder_state
 	previous_encoder_value3 = my_drive3.motor0.encoder.encoder_state

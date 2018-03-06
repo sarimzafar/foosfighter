@@ -1,0 +1,3 @@
+echo 'SUBSYSTEM=="usb", ATTR{idVendor}=="0666", ATTR{idProduct}=="000[0-9]", MODE="0666"' | sudo tee /etc/udev/rules.d/50-odrive.rules
+    sudo udevadm control --reload-rules
+    sudo udevadm trigger # until you reboot you may need to do this everytime you reset the ODrive

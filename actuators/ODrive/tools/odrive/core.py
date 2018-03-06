@@ -174,7 +174,7 @@ def create_object(name, json_data, namespace, channel, printer=noprint):
             attributes[member_name] = attribute
 
     # Create a type from the property list and instantiate it
-    jit_type = type(namespace, (object,), attributes)
+    jit_type = type(str(namespace), (object,), attributes)
     new_object = jit_type()
     return new_object
 
@@ -185,7 +185,7 @@ def channel_from_usb_device(usb_device, printer=noprint):
     """
     bulk_device = odrive.usbbulk_transport.USBBulkTransport(usb_device, printer)
     printer(bulk_device.info())
-    bulk_device.init(printer)
+    bulk_device.init()
     return odrive.protocol.Channel(
             "USB device bus {} device {}".format(usb_device.bus, usb_device.address),
             bulk_device, bulk_device)
@@ -252,7 +252,7 @@ def find_dev_serial_ports(search_regex):
         return []
 
 def find_pyserial_ports():
-    return [x.name for x in serial.tools.list_ports.comports()]
+    return [x.device for x in serial.tools.list_ports.comports()]
 
 def find_serial_channels(printer=noprint):
     """
@@ -270,11 +270,7 @@ def find_serial_channels(printer=noprint):
     macos_usb_serial_ports = find_dev_serial_ports(r'^tty\.usbmodem')
 
     for port in real_serial_ports + linux_usb_serial_ports + macos_usb_serial_ports:
-        try:
-            yield channel_from_serial_port(port, 115200, False, printer)
-        except serial.serialutil.SerialException:
-            printer("could not open " + port)
-            continue
+        yield channel_from_serial_port(port, 115200, False, printer)
 
 
 def find_all(consider_usb=True, consider_serial=False, printer=noprint):
@@ -306,37 +302,6 @@ def find_any(consider_usb=True, consider_serial=False, printer=noprint):
     printer("looking for ODrive...")
     while True:
         dev = next(find_all(consider_usb, consider_serial, printer=printer), None)
-        if dev is not None:
-            return dev
-        printer("no device found")
-        time.sleep(1)
-
-def find_all_foos(consider_usb=True, consider_serial=False, IDs=(0x0,0x0),printer=noprint):
-    """
-    Returns a generator with all the connected devices that speak the ODrive protocol
-    """
-    channels = iter(())
-    if (consider_usb):
-        channels = itertools.chain(channels, find_usb_channels(vid_pid_pairs=IDs,printer=printer))
-    for channel in channels:
-        # TODO: blacklist known bad channels
-        try:
-            yield object_from_channel(channel, printer)
-        except odrive.protocol.DeviceInitException as ex:
-            printer(str(ex))
-            continue
-
-def connect(consider_usb=True, consider_serial=False, IDs=(0x0,0x0), printer=noprint):
-    """
-    Scans for ODrives on all supported interfaces and returns the first device
-    that is found. If no device is connected the function blocks.
-    """
-    # TODO: do device discovery and instantiation in a separate thread and just wait on a semaphore here
-
-    # poll for device
-    printer("looking for ODrive...")
-    while True:
-        dev = next(find_all_foos(consider_usb, consider_serial, IDs, printer=printer), None)
         if dev is not None:
             return dev
         printer("no device found")

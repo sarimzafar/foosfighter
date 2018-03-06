@@ -174,7 +174,7 @@ def create_object(name, json_data, namespace, channel, printer=noprint):
             attributes[member_name] = attribute
 
     # Create a type from the property list and instantiate it
-    jit_type = type(str(namespace), (object,), attributes)
+    jit_type = type(namespace, (object,), attributes)
     new_object = jit_type()
     return new_object
 
@@ -185,7 +185,7 @@ def channel_from_usb_device(usb_device, printer=noprint):
     """
     bulk_device = odrive.usbbulk_transport.USBBulkTransport(usb_device, printer)
     printer(bulk_device.info())
-    bulk_device.init()
+    bulk_device.init(printer)
     return odrive.protocol.Channel(
             "USB device bus {} device {}".format(usb_device.bus, usb_device.address),
             bulk_device, bulk_device)
@@ -252,7 +252,7 @@ def find_dev_serial_ports(search_regex):
         return []
 
 def find_pyserial_ports():
-    return [x.device for x in serial.tools.list_ports.comports()]
+    return [x.name for x in serial.tools.list_ports.comports()]
 
 def find_serial_channels(printer=noprint):
     """
@@ -270,7 +270,11 @@ def find_serial_channels(printer=noprint):
     macos_usb_serial_ports = find_dev_serial_ports(r'^tty\.usbmodem')
 
     for port in real_serial_ports + linux_usb_serial_ports + macos_usb_serial_ports:
-        yield channel_from_serial_port(port, 115200, False, printer)
+        try:
+            yield channel_from_serial_port(port, 115200, False, printer)
+        except serial.serialutil.SerialException:
+            printer("could not open " + port)
+            continue
 
 
 def find_all(consider_usb=True, consider_serial=False, printer=noprint):

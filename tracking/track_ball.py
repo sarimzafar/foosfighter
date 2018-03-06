@@ -38,11 +38,11 @@ def track_ball(img):
         center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
         cv2.circle(img, (int(x), int(y)), int(r), (0, 255, 0), 2)
      
-    cv2.imshow("tracking", img)
+    # cv2.imshow("tracking", img)
     
-    if center is not None:
-        print('\033[1m' + str(center[0]) + "," + str(center[1]) + '\033[0m')
-    else:
-        print('\033[1m' + "DID NOT FIND" + '\033[0m')
+    #if center is not None:
+    #    print('\033[1m' + str(center[0]) + "," + str(center[1]) + '\033[0m')	
+    #else:
+    #    print('\033[1m' + "DID NOT FIND" + '\033[0m')
     
     return center
