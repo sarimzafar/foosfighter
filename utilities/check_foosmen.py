@@ -1,24 +1,4 @@
 import cv2
-
-img = cv2.imread("alex.jpg")
-print(img.shape)
-
-w1 = 45
-w2 = 100
-w3 = 140
-
-goalie = img[:, 0:w1]
-defence = img[:, w1:w2]
-midfield = img[:, w2:w3]
-striker = img[:, w3:250]
-
-cv2.imshow("goalie", goalie)
-cv2.imshow("defence", defence)
-cv2.imshow("midfield", midfield)
-cv2.imshow("striker", striker)
-
-cv2.waitKey(0)
-
 import cv2
 import numpy as np
 import imutils
@@ -28,17 +8,14 @@ from skimage import measure
 from imutils.video import FPS
 from imutils.video import WebcamVideoStream
 
-def locate_foosmen(wvs):
+# Debug for Foosmen locations
+
+def main():
+	wvs = WebcamVideoStream(src=0)
 	vs = wvs.start()
 	fps = FPS().start()
 	key = ''
 	
-	#frame = cv2.imread('apo2.jpg')
-	#cv2.imshow('frame', frame)	
-	#cv2.imshow("foosmen", label_foosmen(frame, get_foosmen_mask(frame)))
-	
-	#cv2.waitKey(0)
-    
 	while key != 113:
 		frame = vs.read()
 		frame = imutils.resize(frame[20:356, 50:672], width = 250)
@@ -71,7 +48,6 @@ def get_foosmen_mask(img):
     return mask
 
 def label_foosmen(image, thresh):
-	goalie_mask = thresh[]
 	labels = measure.label(thresh, neighbors=8, background=0)
 	mask = np.zeros(thresh.shape, dtype="uint8")
 
@@ -97,15 +73,16 @@ def label_foosmen(image, thresh):
 			# draw the bright spot on the image
 			(x, y, w, h) = cv2.boundingRect(c)
 			((cX, cY), radius) = cv2.minEnclosingCircle(c)
-			#cv2.circle(image, (int(cX), int(cY)), int(radius),
-			#	(0, 0, 255), 3)
-			#cv2.putText(image, "#{}".format(i + 1), (x, y+10),
-			#	cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0, 255, 0), 1)
+			cv2.circle(image, (int(cX), int(cY)), int(radius),
+				(0, 0, 255), 3)
+			cv2.putText(image, "#{}".format(i + 1), (x, y+10),
+				cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0, 255, 0), 1)
 
 	 
 	return image
 
-
+if __name__ == "__main__":
+	main()
 
 
 
