@@ -24,8 +24,9 @@ def main():
     import sys
     global image_hsv, pixel  # so we can use it in mouse callback
     # storagePath = '/media/ubuntu/TX1/vgaframes/'
-    fileName = 'alex.jpg'
-    image_src = cv2.imread(fileName)  # pick.py my.png
+    fileName = 'data/hand-2933.png'
+    image_src = cv2.imread(fileName)
+    
     if image_src is None:
         print("the image read is None............")
         return

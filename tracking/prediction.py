@@ -14,13 +14,15 @@ def prediction(tracking_points, n):
 	for item in tracking_points:
 		x_array.append(item[0])
 		y_array.append(item[1])
-               
-	m, c = np.polyfit(x_array, y_array, 1)
     
-	if x_array[-1:] > x_array[-2:-1]:
-		direction = 1
-	else:
-		direction = -1
-    
-	return m, c, direction
-    
+	try:           
+		m, c = np.polyfit(x_array, y_array, 1)
+		
+		if x_array[-1:] > x_array[-2:-1]:
+			direction = 1
+		else:
+			direction = -1
+		
+		return m, c, direction
+	except ZeroDivisionError :
+		return None, None, None	

@@ -237,7 +237,8 @@ def tracking(wvs, calibration, drive1, drive2, drive3, drive4, limits, barpositi
 		# Read Frame
 		frame = vs.read()
 		# Resize Frame		
-		frame = imutils.resize(frame[20:356, 50:672], width = 250)
+		#frame = imutils.resize(frame[20:356, 50:672], width = 250)
+		frame = imutils.resize(frame[25:340, 70:650], width = 250)
 		# Detect Ball
 		pos = track_ball(frame)
 		# Predict Ball Movement
@@ -245,10 +246,10 @@ def tracking(wvs, calibration, drive1, drive2, drive3, drive4, limits, barpositi
 		# Update dt
 		currentTime = time.time()
 		dt =  currentTime - prevTime
-		
+	
 		if pos is not None:
-			mid_tracker = mid_control(drive3, pos[1], lowside=calibration[4], highside=calibration[5], limit=limits[2], tracker=mid_tracker)
-			fwd_tracker = fwd_control(drive4, pos[1], lowside=calibration[6], highside=calibration[7], limit=limits[3], tracker=fwd_tracker)
+			#mid_tracker = mid_control(drive3, pos[1], lowside=calibration[4], highside=calibration[5], limit=limits[2], tracker=mid_tracker)
+			#fwd_tracker = fwd_control(drive4, pos[1], lowside=calibration[6], highside=calibration[7], limit=limits[3], tracker=fwd_tracker)
 			#goalie_tracker=goalie_control(drive1, pos[1],lowside=calibration[0], highside=calibration[1], limit=limits[0], tracker=goalie_tracker)
 			#def_tracker=def_control(drive2, pos[1],lowside=calibration[2], highside=calibration[3], limit=limits[1], tracker=def_tracker)
 			mp[0] = float(pos[0])
@@ -256,11 +257,13 @@ def tracking(wvs, calibration, drive1, drive2, drive3, drive4, limits, barpositi
 			kalman.correct(mp)
 			detected = True
 			
-			goaliekick=goalie_kick(drive1, pos[0], goaliekick, barpositions[0])
-			defkick=def_kick(drive2, pos[0], defkick, barpositions[1])
-			midkick=def_kick(drive3, pos[0], midkick, barpositions[2])
-			fwdkick=def_kick(drive4, pos[0], fwdkick, barpositions[3])
+			#goaliekick=goalie_kick(drive1, pos[0], goaliekick, barpositions[0])
+			#defkick=def_kick(drive2, pos[0], defkick, barpositions[1])
+			#midkick=def_kick(drive3, pos[0], midkick, barpositions[2])
+			#fwdkick=def_kick(drive4, pos[0], fwdkick, barpositions[3])
+
 			tracking_points.append(pos)
+
 			#goalie, defence = predict_ball(tracking_points, barpositions, samplingsize)
 		else:
 			if detected is True:
@@ -268,18 +271,24 @@ def tracking(wvs, calibration, drive1, drive2, drive3, drive4, limits, barpositi
 				kalman.transitionMatrix[1][3] = dt
 
 				tp = kalman.predict()
-				#pos = (int(tp[0]), int(tp[1]))
-				cv2.circle(frame, pos, 3, (255, 0, 0), 2)
-			else:
-				w,h, _ = frame.shape
-				#pos = (int(w/2), int(h/2))
+				pos = (int(tp[0]), int(tp[1]))
 
-		#tracking_points.append(pos)
+				cv2.circle(frame, pos, 3, (255, 0, 0), 2)
+
+			else:
+				continue
+	
+		tracking_points.append(pos)	
 		goalie, defence = predict_ball(tracking_points, barpositions, samplingsize)
 
-		#goaliekick=goalie_kick(drive1, pos[0], goaliekick, barpositions[0])
-		#defkick=def_kick(drive2, pos[0], defkick, barpositions[1])
-		#midkick=def_kick(drive3, pos[0], midkick, barpositions[2])		
+		goaliekick=goalie_kick(drive1, pos[0], goaliekick, barpositions[0])
+		defkick=def_kick(drive2, pos[0], defkick, barpositions[1])
+		midkick=def_kick(drive3, pos[0], midkick, barpositions[2])		
+		fwdkick=def_kick(drive4, pos[0], fwdkick, barpositions[3])
+
+		mid_tracker = mid_control(drive3, pos[1], lowside=calibration[4], highside=calibration[5], limit=limits[2], tracker=mid_tracker)
+		fwd_tracker = fwd_control(drive4, pos[1], lowside=calibration[6], highside=calibration[7], limit=limits[3], tracker=fwd_tracker)
+			
 
 		if goalie is not None and defence is not None:# and False: #WON'T HAPPEN
 			if goalie > 0 and goalie < frame.shape[0]:
@@ -340,7 +349,7 @@ def get_kalman_filter():
 	kalman = cv2.KalmanFilter(stateSize, measSize)
 	kalman.measurementMatrix = np.array([[1,0,0,0],[0,1,0,0]],np.float32)
 	kalman.transitionMatrix = np.array([[1,0,1,0],[0,1,0,1],[0,0,1,0],[0,0,0,1]],np.float32)
-	kalman.processNoiseCov = np.array([[0,0,0,0],[0,0,0,0],[0,0,25,0],[0,0,0,25]],np.float32)
+	kalman.processNoiseCov = np.array([[1e-03,0,0,0],[0,1e-03,0,0],[0,0,0.25,0],[0,0,0,0.25]],np.float32)
 	kalman.measurementNoiseCov = np.array([[1,0],[0,1]],np.float32) * 0.00003
 
 	return kalman

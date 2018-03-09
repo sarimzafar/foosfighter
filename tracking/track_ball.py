@@ -35,11 +35,13 @@ def track_ball(img):
         c = max(cnts, key=cv2.contourArea)
         ((x, y), r) = cv2.minEnclosingCircle(c)
         M = cv2.moments(c)
-        center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
-        cv2.circle(img, (int(x), int(y)), int(r), (0, 255, 0), 2)
-     
+        try:
+        	center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+        	cv2.circle(img, (int(x), int(y)), int(r), (0, 255, 0), 2)
+        except ZeroDivisionError :
+	        pass
+        
     # cv2.imshow("tracking", img)
-    
     #if center is not None:
     #    print('\033[1m' + str(center[0]) + "," + str(center[1]) + '\033[0m')	
     #else:

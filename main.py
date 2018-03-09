@@ -5,8 +5,6 @@
 
 import imutils
 import numpy as np
-
-from utilities import display_frames
 from tracking.tracking import tracking
 from tracking.locate_foosmen import locate_foosmen
 from imutils.video import WebcamVideoStream
