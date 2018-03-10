@@ -17,7 +17,7 @@ def connectODrives():
 	my_drive4 = odrive.core.connect(consider_usb=True, consider_serial=False, IDs = odrive.util.ODRIVE_FWD, printer=print)
 	return my_drive1, my_drive2, my_drive3, my_drive4
 	#return my_drive1, my_drive2, my_drive4
-	#return None, None, my_drive3, None
+	#return None, None, None, None
 
 def setODrivePos(drive, mot, point):
 	if drive is not None:

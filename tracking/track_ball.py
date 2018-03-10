@@ -43,7 +43,7 @@ def track_ball(img):
         
     # cv2.imshow("tracking", img)
     #if center is not None:
-    #    print('\033[1m' + str(center[0]) + "," + str(center[1]) + '\033[0m')	
+    #   print('\033[1m' + str(center[0]) + "," + str(center[1]) + '\033[0m')	
     #else:
     #    print('\033[1m' + "DID NOT FIND" + '\033[0m')
     

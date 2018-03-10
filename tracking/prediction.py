@@ -6,7 +6,7 @@ warnings.simplefilter('ignore', np.RankWarning)
 
 def prediction(tracking_points, n):
 	if len(tracking_points) < n :
-		return None, None, None
+		return None, None, None, None
     
 	x_array = []
 	y_array = []
@@ -23,6 +23,12 @@ def prediction(tracking_points, n):
 		else:
 			direction = -1
 		
-		return m, c, direction
+		return m, c, direction, x_array[-1:]
 	except ZeroDivisionError :
-		return None, None, None	
+		return None, None, None, None
+	except KeyboardInterrupt:
+		return None, None, None, None
+	except:
+		return None, None, None, None
+		pass
+		

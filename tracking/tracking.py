@@ -169,19 +169,20 @@ def goalie_kick(drive, pos, kickstate, bar):
 	if drive is not None:
 		if kickstate==0 and pos < (bar+20) and pos > (bar-0):
 			kickstate=1
-			setODrivePos(drive,0,-500)#drive.motor0.pos_setpoint=-200		
+			setODrivePos(drive,0,-300)#drive.motor0.pos_setpoint=-200		
 			#drive.motor1.set_pos_setpoint(-600, 0.0, 0.0)
 		elif kickstate==1:
 			#print(drive.motor1.encoder.encoder_state)
-			if drive.motor0.encoder.encoder_state <-400:
+			if drive.motor0.encoder.encoder_state <-200: #goalie has a low kick
 				setODrivePos(drive,0,300)#drive.motor0.pos_setpoint=600
 				kickstate=2
 		elif kickstate==2:
 			if drive.motor0.encoder.encoder_state >200:
 				kickstate=0
 				setODrivePos(drive,0,0.0)#drive.motor0.pos_setpoint=0.0
-		elif pos < (bar-5):
-			setODrivePos(drive,0,600)
+		#elif pos < (bar-5):
+			#goalie should always be down
+			#setODrivePos(drive,0,600)
 		return kickstate
 	return 0
 
@@ -214,7 +215,7 @@ def tracking(wvs, calibration, drive1, drive2, drive3, drive4, limits, barpositi
 	key = ''
 	vs = wvs.start()
 	fps = FPS().start()
-
+	# Odrive Setup
 	defkick=0
 	goaliekick=0
 	midkick=0
@@ -225,127 +226,185 @@ def tracking(wvs, calibration, drive1, drive2, drive3, drive4, limits, barpositi
 	mid_tracker=0
 	fwd_tracker=0
 
-	tracking_points = []
-	
+	# Kalman Setup
 	prevTime = time.time()
 	mp = np.array((0,0), np.float32)
 	tp = np.zeros((2,1), np.float32)
-	kalman = get_kalman_filter()
+	stateSize = 4
+	measSize = 2
+	kalman = get_kalman_filter(stateSize, measSize)
+	samplingsize = 25
+	
+	# Toggles and Counter
 	detected = False
-
+	frameCount = 0
+	undetectedCount = 0
+	tracking_points = []
+		
 	while key != 113:
 		# Read Frame
 		frame = vs.read()
+		frameCount = frameCount + 1
+		fps.update()
+
 		# Resize Frame		
 		#frame = imutils.resize(frame[20:356, 50:672], width = 250)
 		frame = imutils.resize(frame[25:340, 70:650], width = 250)
-		# Detect Ball
+		
+		# Do not read anything for the first N frames		
+		if frameCount < 50:
+			continue
+		
+		# If the ball has been undetected for more than 3s : Stop Estimation
+		if undetectedCount > 200 :
+			# Reset all state parameters
+			tracking_points = []
+			print(str(len(tracking_points)))			
+			detected = False
+			# Re-initialize Kalman
+			prevTime = time.time()
+			kalman = get_kalman_filter(stateSize, measSize)
+			undetectedCount = 0
+			continue
+		
+		# Detect Ball				
 		pos = track_ball(frame)
 		# Predict Ball Movement
-		samplingsize = 25
-		# Update dt
 		currentTime = time.time()
 		dt =  currentTime - prevTime
 	
-		if pos is not None:
-			#mid_tracker = mid_control(drive3, pos[1], lowside=calibration[4], highside=calibration[5], limit=limits[2], tracker=mid_tracker)
-			#fwd_tracker = fwd_control(drive4, pos[1], lowside=calibration[6], highside=calibration[7], limit=limits[3], tracker=fwd_tracker)
-			#goalie_tracker=goalie_control(drive1, pos[1],lowside=calibration[0], highside=calibration[1], limit=limits[0], tracker=goalie_tracker)
-			#def_tracker=def_control(drive2, pos[1],lowside=calibration[2], highside=calibration[3], limit=limits[1], tracker=def_tracker)
+		if pos is not None: # Ball is found
+			# Make Kalman updates			
 			mp[0] = float(pos[0])
 			mp[1] = float(pos[1])
 			kalman.correct(mp)
-			detected = True
 			
-			#goaliekick=goalie_kick(drive1, pos[0], goaliekick, barpositions[0])
-			#defkick=def_kick(drive2, pos[0], defkick, barpositions[1])
-			#midkick=def_kick(drive3, pos[0], midkick, barpositions[2])
-			#fwdkick=def_kick(drive4, pos[0], fwdkick, barpositions[3])
-
-			tracking_points.append(pos)
-
-			#goalie, defence = predict_ball(tracking_points, barpositions, samplingsize)
-		else:
+			# Reset the detected variables
+			detected = True
+			undetectedCount = 0
+		else: # Ball is not found
 			if detected is True:
 				kalman.transitionMatrix[0][2] = dt
 				kalman.transitionMatrix[1][3] = dt
 
 				tp = kalman.predict()
 				pos = (int(tp[0]), int(tp[1]))
+				undetectedCount = undetectedCount + 1
 
 				cv2.circle(frame, pos, 3, (255, 0, 0), 2)
 
 			else:
+				prevTime = currentTime
 				continue
-	
+
 		tracking_points.append(pos)	
-		goalie, defence = predict_ball(tracking_points, barpositions, samplingsize)
+		goalie, defence, midfield, forward = predict_ball(tracking_points, barpositions, samplingsize, calibration)
 
 		goaliekick=goalie_kick(drive1, pos[0], goaliekick, barpositions[0])
 		defkick=def_kick(drive2, pos[0], defkick, barpositions[1])
 		midkick=def_kick(drive3, pos[0], midkick, barpositions[2])		
 		fwdkick=def_kick(drive4, pos[0], fwdkick, barpositions[3])
 
-		mid_tracker = mid_control(drive3, pos[1], lowside=calibration[4], highside=calibration[5], limit=limits[2], tracker=mid_tracker)
-		fwd_tracker = fwd_control(drive4, pos[1], lowside=calibration[6], highside=calibration[7], limit=limits[3], tracker=fwd_tracker)
+		#mid_tracker = mid_control(drive3, pos[1], lowside=calibration[4], highside=calibration[5], limit=limits[2], tracker=mid_tracker)
+		#fwd_tracker = fwd_control(drive4, pos[1], lowside=calibration[6], highside=calibration[7], limit=limits[3], tracker=fwd_tracker)
 			
 
-		if goalie is not None and defence is not None:# and False: #WON'T HAPPEN
+		if goalie is not None: 
 			if goalie > 0 and goalie < frame.shape[0]:
 				cv2.circle(frame, (barpositions[0], goalie), 2, (120, 40, 255), 2)
 				goalie_tracker=goalie_control(drive1, goalie,lowside=calibration[0], highside=calibration[1], limit=limits[0], tracker=goalie_tracker)
-			
+		if defence is not None:
 			if defence > 0 and defence < frame.shape[0]:
 				cv2.circle(frame, (barpositions[1], defence), 2, (120, 40, 255), 2)
 				def_tracker=def_control(drive2, defence,lowside=calibration[2], highside=calibration[3], limit=limits[1], tracker=def_tracker)
+		if midfield is not None:
+			if midfield > 0 and midfield < frame.shape[0]:
+				cv2.circle(frame, (barpositions[2], midfield), 2, (120, 40, 255), 2)
+				mid_tracker = mid_control(drive3, midfield, lowside=calibration[4], highside=calibration[5], limit=limits[2], tracker=mid_tracker)
+		if forward is not None:
+			if forward > 0 and forward < frame.shape[0]:
+				cv2.circle(frame, (barpositions[3], forward), 2, (120, 40, 255), 2)
+				fwd_tracker = fwd_control(drive4, forward, lowside=calibration[6], highside=calibration[7], limit=limits[3], tracker=fwd_tracker)
 
 
 		if len(tracking_points) > samplingsize:
 			tracking_points = tracking_points[-int(samplingsize/2):]
 
-		cv2.imshow('kalman-prediction', frame)
-	
 		prevTime = currentTime
-		fps.update()
 		
+		cv2.imshow('kalman-prediction', frame)
 		key = cv2.waitKey(5)
-	else:
-		key = cv2.waitKey(5)
-
+	
 	fps.stop()
+	print("[INFO] Total Frames Read : ".format(frameCount))
 	print("[INFO] elasped time: {:.2f}".format(fps.elapsed()))
 	print("[INFO] approx. FPS: {:.2f}".format(fps.fps()))
- 
+	print("[INFO] Time Based FPS: {:.2f}".format(float(frameCount/fps.elapsed())))
+
 	# do a bit of cleanup
 	cv2.destroyAllWindows()
 	vs.stop()
 	print("\nFINISHED")
-	
+			
 
-def predict_ball(tracking_points, barpositions, samplingsize):
-	m, c, direction = prediction(tracking_points, samplingsize)
-		
-	# print('\033[1m' + 'Slope(m) : ' + str(m) + " - Intercept : " + str(c) + '\033[0m')
+def predict_ball(tracking_points, barpositions, samplingsize, calibration):
+	m, c, direction, currPosX = prediction(tracking_points, samplingsize)
 	
+	goalie = None
+	defence = None
+	midfield = None
+	forward = None		
+		
 	if m is None or c is None:
-		return None, None
+		return goalie, defence, midfield, forward
 
-	goalie = int(m*barpositions[0] + c)
-	defence = int(m*barpositions[1] + c)
 
-	#print('\033[1m' + 'Goalie(m) : ' + str(barpositions[0]) + ", " + str(goalie) + '\033[0m')
-	#print('\033[1m' + 'Defence(m) : ' + str(barpositions[1]) + ", " + str(defence) + '\033[0m')
+	# If direction = 1 - ball is moving towards attack
+	# If direction = -1 - ball is moving towards defence
+
+	# currPosX = (tracking_points[-1:])[0]
+
+	currPosX = currPosX[0]
+	
+	if direction == 1:
+		goalie = int((calibration[0] + calibration[1])/2)
 		
-	#midfield = int(m*barpositions[2] + c)
-	#striker = int(m*barpositions[3] + c)
+		if currPosX > barpositions[0]: 
 
-	return goalie, defence
+			defence = int(m*barpositions[1] + c)
 
-def get_kalman_filter():
+		if currPosX > barpositions[1]:
+			midfield = int(m*barpositions[2] + c)
+
+		if currPosX > barpositions[2]:
+			forward = int(m*barpositions[3] + c)
+		
+	elif direction == -1:
+		goalie = int(m*barpositions[0] + c)
+
+		if currPosX > barpositions[1]:	
+			defence = int(m*barpositions[1] + c)
+		
+		if currPosX > barpositions[2]:
+			midfield = int(m*barpositions[2] + c)
+		
+		if currPosX > barpositions[3]:
+			forward = int(m*barpositions[3] + c)
+			
+
+	# print('\033[1m' + 'DIRECTION : ' + str(direction) + str(c) + '\033[0m')
+
+	# print('\033[1m' + 'Goalie(m) : ' + str(barpositions[0]) + ", " + str(goalie) + '\033[0m')
+	# print('\033[1m' + 'Defence(m) : ' + str(barpositions[1]) + ", " + str(defence) + '\033[0m')
+		
+	# midfield = int(m*barpositions[2] + c)
+	# striker = int(m*barpositions[3] + c)
+
+	return goalie, defence, midfield, forward
+
+def get_kalman_filter(stateSize, measSize):
 	# Kalman Filter Stuff
-	stateSize = 4
-	measSize = 2
-
+	
 	kalman = cv2.KalmanFilter(stateSize, measSize)
 	kalman.measurementMatrix = np.array([[1,0,0,0],[0,1,0,0]],np.float32)
 	kalman.transitionMatrix = np.array([[1,0,1,0],[0,1,0,1],[0,0,1,0],[0,0,0,1]],np.float32)

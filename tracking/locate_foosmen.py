@@ -8,9 +8,9 @@ from imutils.video import FPS
 from imutils.video import WebcamVideoStream
 
 # Define foosmen constants
-w1 = 45
-w2 = 100
-w3 = 140
+w1 = 35
+w2 = 90
+w3 = 130
 
 def locate_foosmen(wvs):
 	vs = wvs.start()
@@ -24,7 +24,7 @@ def locate_foosmen(wvs):
 
 	while ((goalie != 1) or (defence != 2) or (midfield != 5) or (striker != 3)):
 		frame = vs.read()
-		frame = imutils.resize(frame[20:356, 50:672], width = 250)
+		frame = imutils.resize(frame[25:340, 70:650], width = 250)
 		
 		goalie, goalie_position = label_foosmen(frame, get_foosmen_mask(frame[:, 0:w1]), 0)
 		defence, defence_positions = label_foosmen(frame, get_foosmen_mask(frame[:, w1:w2]), w1)
