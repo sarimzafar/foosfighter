@@ -11,20 +11,9 @@ def track_ball(img):
 
     # Apply mask
     mask = cv2.inRange(img_hsv, lower_orange, upper_orange)
-
-    #cv2.imshow("colored mask", mask)
-
-    # Postprocessing
-    #mask = cv2.erode(mask, np.ones((3, 3), np.uint8), iterations=3)
-    #mask = cv2.dilate(mask, np.ones((4, 4), np.uint8), iterations=3)
 	
     mask = cv2.erode(mask, np.ones((3, 3), np.uint8), iterations=1)
     mask = cv2.dilate(mask, np.ones((2, 2), np.uint8), iterations=3)
-
-    #mask = cv2.erode(mask, np.ones((2, 2), np.uint8), iterations=1)
-    #mask = cv2.dilate(mask, np.ones((2, 2), np.uint8), iterations=3)
-
-    # cv2.imshow("morphed mask", mask)
 
     cnts = cv2.findContours(mask, cv2.RETR_EXTERNAL,
                             cv2.CHAIN_APPROX_SIMPLE)[-2]
@@ -41,10 +30,4 @@ def track_ball(img):
         except ZeroDivisionError :
 	        pass
         
-    # cv2.imshow("tracking", img)
-    #if center is not None:
-    #   print('\033[1m' + str(center[0]) + "," + str(center[1]) + '\033[0m')	
-    #else:
-    #    print('\033[1m' + "DID NOT FIND" + '\033[0m')
-    
     return center
