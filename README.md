@@ -1,5 +1,13 @@
 # Foosfighter
-### Code Repository for the automated fusball table created by engineers at UW (Real Engineers not the fake ones at UofT)
+### Code Repository for the automated fusball table
+
+# Suggested Links
+
+Demo - https://www.youtube.com/watch?v=tToy-aSWqO0
+
+Sponsor Video - https://www.youtube.com/watch?v=YNNptNd8v2A
+
+LinkedIn Post - https://www.linkedin.com/feed/update/urn:li:activity:6384877797726306304
 
 ## NOTES
 #### The previous master has been moved to branch prev-master.
