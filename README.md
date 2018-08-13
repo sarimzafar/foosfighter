@@ -13,7 +13,7 @@ LinkedIn Post - https://www.linkedin.com/feed/update/urn:li:activity:63848777977
 #### The previous master has been moved to branch prev-master.
 #### No future mass commits to master are allowed
 #### All updates here must be approved by atleast 2 members (Refer here - https://www.atlassian.com/git/tutorials/making-a-pull-request)
-#### All the code in master *MUST BE TESTED* on the fusball table first
+#### All the code in master *MUST BE TESTED* on the foosball table first
 
 ## GIT NOTES
 #### Refer to this Gist to pull all branches (https://gist.github.com/grimzy/a1d3aae40412634df29cf86bb74a6f72)
