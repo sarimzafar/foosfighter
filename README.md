@@ -1,6 +1,8 @@
 # Foosfighter
 ### Code Repository for the automated foosball table
 
+#### Please check the poster file in the Repository for more information
+
 # Suggested Links
 
 Demo - https://www.youtube.com/watch?v=tToy-aSWqO0
