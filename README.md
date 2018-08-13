@@ -1,5 +1,5 @@
 # Foosfighter
-### Code Repository for the automated fusball table
+### Code Repository for the automated foosball table
 
 # Suggested Links
 
