@@ -9,15 +9,15 @@ import math
 from actuators.connectODrives import setODrivePos
 def mancalibrate(my_drive1, my_drive2, my_drive3, my_drive4, first):
 	if first:
-		drive1Setpoint = 2000
-		drive2Setpoint = -4300#-3000#-4800
-		drive3Setpoint = -500#-500
-		drive4Setpoint = -2000
+		drive1Setpoint = 800#2000
+		drive2Setpoint = -1000#-4600#-4300#-3000#-4800
+		drive3Setpoint = -1000#-500#-500
+		drive4Setpoint = -1000#-2000
 	else:
-		drive1Setpoint = -3000#-3200
-		drive2Setpoint = 2200#1800#2800
-		drive3Setpoint = 1600#1800
-		drive4Setpoint = 3000#3000
+		drive1Setpoint = -4000#-3000#-3200
+		drive2Setpoint = 6600#2750#2200#1800#2800
+		drive3Setpoint = 1300#1600#1800
+		drive4Setpoint = 4200#3300#3000
 	setODrivePos(my_drive1,1,drive1Setpoint)
 	setODrivePos(my_drive2,0,drive2Setpoint)
 	setODrivePos(my_drive3,0,drive3Setpoint)

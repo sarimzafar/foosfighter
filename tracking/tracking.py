@@ -165,12 +165,13 @@ def fwd_control(drive, pos, lowside, highside, limit, tracker):
 		return tracker	
 	return 0
 
-def goalie_kick(drive, pos, kickstate, bar):
+def goalie_kick(drive, pos, kickstate, bar, direction):
 	if drive is not None:
-		if kickstate==0 and pos < (bar+20) and pos > (bar-0):
-			kickstate=1
-			setODrivePos(drive,0,-300)#drive.motor0.pos_setpoint=-200		
-			#drive.motor1.set_pos_setpoint(-600, 0.0, 0.0)
+		if kickstate==0 and pos < (bar+20) and pos > (bar-0) and direction is not None:
+			if direction == 1:
+				kickstate=1
+				setODrivePos(drive,0,-300)#drive.motor0.pos_setpoint=-200		
+				#drive.motor1.set_pos_setpoint(-600, 0.0, 0.0)
 		elif kickstate==1:
 			#print(drive.motor1.encoder.encoder_state)
 			if drive.motor0.encoder.encoder_state <-200: #goalie has a low kick
@@ -186,9 +187,15 @@ def goalie_kick(drive, pos, kickstate, bar):
 		return kickstate
 	return 0
 
-def def_kick(drive, pos, kickstate, bar):
+def def_kick(drive, pos, kickstate, bar, direction, velx, vely):
 	if drive is not None:
-		if kickstate==0 and pos < (bar+20) and pos > (bar-0):
+		#if direction is not None:
+		
+		#else
+		if kickstate==0 and pos < (bar+20) and pos > (bar-3):
+			if direction is not None and velx is not None and vely is not None:
+				if (direction==1) and ((velx > 100) or (velx < -100)) :
+					return kickstate
 			kickstate=1
 			setODrivePos(drive,1,-500)#drive.motor1.pos_setpoint=-200		
 			#drive.motor1.set_pos_setpoint(-600, 0.0, 0.0)
@@ -201,8 +208,10 @@ def def_kick(drive, pos, kickstate, bar):
 			if drive.motor1.encoder.encoder_state >200:
 				kickstate=0
 				setODrivePos(drive,1,0.0)#drive.motor1.pos_setpoint=0.0
-		elif pos < (bar-5):
-			setODrivePos(drive,1,600)
+		elif pos < (bar-10):
+			setODrivePos(drive,1,-600)
+			#if bar < 70:
+			#	print('read', pos, bar)
 		return kickstate
 	return 0
 
@@ -277,8 +286,14 @@ def tracking(wvs, calibration, drive1, drive2, drive3, drive4, limits, barpositi
 			# Make Kalman updates			
 			mp[0] = float(pos[0])
 			mp[1] = float(pos[1])
+
+			kalman.transitionMatrix[0][2] = dt
+			kalman.transitionMatrix[1][3] = dt
+
 			kalman.correct(mp)
 			
+			tp = kalman.predict()
+			#X velocity ranges around like 0 - 200 or so
 			# Reset the detected variables
 			detected = True
 			undetectedCount = 0
@@ -288,6 +303,10 @@ def tracking(wvs, calibration, drive1, drive2, drive3, drive4, limits, barpositi
 				kalman.transitionMatrix[1][3] = dt
 
 				tp = kalman.predict()
+
+				#print("x velocity", int(tp[2]))
+				#print("y velocity", int(tp[3]))
+				
 				pos = (int(tp[0]), int(tp[1]))
 				undetectedCount = undetectedCount + 1
 
@@ -298,12 +317,12 @@ def tracking(wvs, calibration, drive1, drive2, drive3, drive4, limits, barpositi
 				continue
 
 		tracking_points.append(pos)	
-		goalie, defence, midfield, forward = predict_ball(tracking_points, barpositions, samplingsize, calibration)
+		goalie, defence, midfield, forward, direction = predict_ball(tracking_points, barpositions, samplingsize, calibration, tp[2], tp[3])
 
-		goaliekick=goalie_kick(drive1, pos[0], goaliekick, barpositions[0])
-		defkick=def_kick(drive2, pos[0], defkick, barpositions[1])
-		midkick=def_kick(drive3, pos[0], midkick, barpositions[2])		
-		fwdkick=def_kick(drive4, pos[0], fwdkick, barpositions[3])
+		goaliekick=goalie_kick(drive1, pos[0], goaliekick, barpositions[0], direction)
+		defkick=def_kick(drive2, pos[0], defkick, barpositions[1], direction, tp[2], tp[3])
+		midkick=def_kick(drive3, pos[0], midkick, barpositions[2], direction, tp[2], tp[3])
+		fwdkick=def_kick(drive4, pos[0], fwdkick, barpositions[3], direction, tp[2], tp[3])
 
 		#mid_tracker = mid_control(drive3, pos[1], lowside=calibration[4], highside=calibration[5], limit=limits[2], tracker=mid_tracker)
 		#fwd_tracker = fwd_control(drive4, pos[1], lowside=calibration[6], highside=calibration[7], limit=limits[3], tracker=fwd_tracker)
@@ -311,8 +330,11 @@ def tracking(wvs, calibration, drive1, drive2, drive3, drive4, limits, barpositi
 
 		if goalie is not None: 
 			if goalie > 0 and goalie < frame.shape[0]:
-				cv2.circle(frame, (barpositions[0], goalie), 2, (120, 40, 255), 2)
-				goalie_tracker=goalie_control(drive1, goalie,lowside=calibration[0], highside=calibration[1], limit=limits[0], tracker=goalie_tracker)
+				cv2.circle(frame, (barpositions[0], goalie), 4, (120, 40, 255), 4)
+				if pos[0] < (barpositions[2]-50):
+					goalie_tracker=goalie_control(drive1, pos[1]+1,lowside=calibration[0], highside=calibration[1], limit=limits[0], tracker=goalie_tracker)
+				else:
+					goalie_tracker=goalie_control(drive1, goalie,lowside=calibration[0], highside=calibration[1], limit=limits[0], tracker=goalie_tracker)
 		if defence is not None:
 			if defence > 0 and defence < frame.shape[0]:
 				cv2.circle(frame, (barpositions[1], defence), 2, (120, 40, 255), 2)
@@ -347,7 +369,7 @@ def tracking(wvs, calibration, drive1, drive2, drive3, drive4, limits, barpositi
 	print("\nFINISHED")
 			
 
-def predict_ball(tracking_points, barpositions, samplingsize, calibration):
+def predict_ball(tracking_points, barpositions, samplingsize, calibration, velx, vely):
 	m, c, direction, currPosX = prediction(tracking_points, samplingsize)
 	
 	goalie = None
@@ -356,7 +378,7 @@ def predict_ball(tracking_points, barpositions, samplingsize, calibration):
 	forward = None		
 		
 	if m is None or c is None:
-		return goalie, defence, midfield, forward
+		return goalie, defence, midfield, forward, None
 
 
 	# If direction = 1 - ball is moving towards attack
@@ -366,30 +388,40 @@ def predict_ball(tracking_points, barpositions, samplingsize, calibration):
 
 	currPosX = currPosX[0]
 	
-	if direction == 1:
-		goalie = int((calibration[0] + calibration[1])/2)
-		
-		if currPosX > barpositions[0]: 
+	if direction == 1 or direction is None:
+		goalie = int(((calibration[1]-calibration[0])/2)+calibration[0])
+	else:
+		goalie = int(m*barpositions[0] + c + 1)
 
-			defence = int(m*barpositions[1] + c)
+	#goalie = int(m*barpositions[0] + c)
+	defence = int(m*barpositions[1] + c)
+	midfield = int(m*barpositions[2] + c)
+	forward = int(m*barpositions[3] + c)
 
-		if currPosX > barpositions[1]:
-			midfield = int(m*barpositions[2] + c)
-
-		if currPosX > barpositions[2]:
-			forward = int(m*barpositions[3] + c)
-		
-	elif direction == -1:
-		goalie = int(m*barpositions[0] + c)
-
-		if currPosX > barpositions[1]:	
-			defence = int(m*barpositions[1] + c)
-		
-		if currPosX > barpositions[2]:
-			midfield = int(m*barpositions[2] + c)
-		
-		if currPosX > barpositions[3]:
-			forward = int(m*barpositions[3] + c)
+	#if direction == 1:
+	#	goalie = int((calibration[0] + calibration[1])/2)
+	#	
+	#	if currPosX > barpositions[0]: 
+#
+#			defence = int(m*barpositions[1] + c)
+#
+#		if currPosX > barpositions[1]:
+#			midfield = int(m*barpositions[2] + c)
+#
+#		if currPosX > barpositions[2]:
+#			forward = int(m*barpositions[3] + c)
+#		
+#	elif direction == -1:
+#		goalie = int(m*barpositions[0] + c)
+#
+#		if currPosX > barpositions[1]:	
+#			defence = int(m*barpositions[1] + c)
+#		
+#		if currPosX > barpositions[2]:
+#			midfield = int(m*barpositions[2] + c)
+#		
+#		if currPosX > barpositions[3]:
+#			forward = int(m*barpositions[3] + c)
 			
 
 	# print('\033[1m' + 'DIRECTION : ' + str(direction) + str(c) + '\033[0m')
@@ -400,7 +432,7 @@ def predict_ball(tracking_points, barpositions, samplingsize, calibration):
 	# midfield = int(m*barpositions[2] + c)
 	# striker = int(m*barpositions[3] + c)
 
-	return goalie, defence, midfield, forward
+	return goalie, defence, midfield, forward, direction
 
 def get_kalman_filter(stateSize, measSize):
 	# Kalman Filter Stuff
